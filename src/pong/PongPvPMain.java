@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.*;
 
 
-class PongWindow extends JFrame {
+class PongPvPMain extends JFrame {
     //won't hit right panel if ballDiam is ODD val
     private final int BALL_DIAMETER= 24, PADDLE_WIDTH = 30, PADDLE_HEIGHT = 125;
     private GamePanel gamePanel = new GamePanel();
@@ -16,13 +16,13 @@ class PongWindow extends JFrame {
     private Point ball = new Point(100,60), paddRight = new Point(752, 0), paddLeft = new Point();
     private int ball_dx = 2, ball_dy = 2;
     private int playerLeftPoints = 0, playerRightPoints = 0;
-    
+
     private final String leftLabelText = "Left Player Points:";
     private final String rightLabelText = "Right Player Points:";
     private JLabel leftLabel, rightLabel, leftPts, rightPts;
     
-    public PongWindow() {
-        setTitle("Pong V1 --- PvP");
+    public PongPvPMain() {
+        super("Pong V1 --- PvP");
         setSize(1000, 450);
         javax.swing.Timer ballUpdater = new javax.swing.Timer(30, new ActionListener() {
             @Override
@@ -46,22 +46,22 @@ class PongWindow extends JFrame {
                 }
                 if(ball.x == (paddLeft.getX() + PADDLE_WIDTH)){
                     if((ball.y >= (paddLeft.getY())) && (ball.y <= (paddLeft.getY()+PADDLE_HEIGHT))){
-                        ball_dx = -ball_dx;     
+                        ball_dx = -ball_dx;
                     }
                 }
                 if((ball.x+BALL_DIAMETER) == paddRight.x){
                     if((ball.y >= (paddRight.getY())) && (ball.y <= (paddRight.getY()+PADDLE_HEIGHT))){
-                        ball_dx = -ball_dx;     
+                        ball_dx = -ball_dx;
                     }
                 }
                 repaint();
             }
         });
 
-        ballUpdater.start(); 
+        ballUpdater.start();
         add(gamePanel);
         add(gameData, BorderLayout.EAST);
-        
+
 
        // setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         addWindowListener(new WindowListener() {
@@ -71,7 +71,7 @@ class PongWindow extends JFrame {
                     ball.x = scanner.nextInt();
                     scanner.nextLine();
                     ball.y = scanner.nextInt();
-                    } 
+                    }
                 catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -115,7 +115,7 @@ class PongWindow extends JFrame {
 
             }
         });
-        
+
         setVisible(true);
     }
 

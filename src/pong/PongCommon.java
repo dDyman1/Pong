@@ -20,7 +20,7 @@ class PongCommon extends JFrame {
 
     private final String serverLabelText = "Server Player Points:";
     private final String clientLabelText = "Client Player Points:";
-    private JLabel serverLabel, rightLabel, leftPts, rightPts;
+    private JLabel serverLabel, clientLabel, leftPts, rightPts;
 
 
     private ObjectOutputStream output; // output stream to server
@@ -211,9 +211,9 @@ class PongCommon extends JFrame {
             serverLabel.setHorizontalAlignment(SwingConstants.CENTER);
             serverLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
-            rightLabel = new JLabel(clientLabelText);
-            rightLabel.setHorizontalAlignment(SwingConstants.CENTER);
-            rightLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
+            clientLabel = new JLabel(clientLabelText);
+            clientLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            clientLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
             leftPts = new JLabel();
             leftPts.setHorizontalAlignment(SwingConstants.CENTER);
@@ -226,7 +226,7 @@ class PongCommon extends JFrame {
             add(title);
             add(serverLabel);
             add(leftPts);
-            add(rightLabel);
+            add(clientLabel);
             add(rightPts);
 
 

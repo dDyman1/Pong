@@ -17,7 +17,6 @@ public class PongClient extends PongCommon {
         chatServer = host; // set server to which this client connects
         className = getClass().getName();
         cc = new PongCommon(className);
-        cc.constructorBuild(getClass().getName());
     } // end Client constructor
 
     // connect to server and process messages from server
@@ -29,9 +28,8 @@ public class PongClient extends PongCommon {
             cc.getStreams(client); // get the input and output streams
             cc.processConnection(className); // process connection
         } // end try
-        catch ( EOFException eofException )
-        {
-            cc.displayMessage( "\nClient terminated connection" );
+        catch (EOFException | ClassNotFoundException eofException) {
+            cc.displayMessage("\nClient terminated connection");
         } // end catch
         catch ( IOException ioException )
         {

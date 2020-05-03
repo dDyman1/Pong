@@ -11,16 +11,16 @@ import java.util.Scanner;
 class PongCommon extends JFrame {
 
     //won't hit right panel if ballDiam is ODD val
-    private final int BALL_DIAMETER= 24, PADDLE_WIDTH = 30, PADDLE_HEIGHT = 125;
-    private GamePanel gamePanel = new GamePanel();
+    private final int BALL_DIAMETER = 24, PADDLE_WIDTH = 30, PADDLE_HEIGHT = 125;
+    private GamePanel gamePanel;
     private GameData gameData = new GameData();
-    private Point ball = new Point(100,60), paddRight = new Point(752, 0), paddLeft = new Point();
+    private Point ball = new Point(100, 60), paddClient = new Point(752, 0), paddServer = new Point();
     private int ball_dx = 2, ball_dy = 2;
-    private int playerLeftPoints = 0, playerRightPoints = 0;
+    private int playerServerPoints = 0, playerClientPoints = 0;
 
     private final String serverLabelText = "Server Player Points:";
     private final String clientLabelText = "Client Player Points:";
-    private JLabel serverLabel, clientLabel, leftPts, rightPts;
+    private JLabel serverLabel, clientLabel, serverPts, clientPts;
 
 
     private ObjectOutputStream output; // output stream to server
@@ -32,34 +32,36 @@ class PongCommon extends JFrame {
     public PongCommon(String className) {
         //super(className);
         super("Pong V2 --- " + className);
+        if (className.contains("PongServer")) {
+            gamePanel = new GamePanel(paddServer, className);
+        } else {
+            gamePanel = new GamePanel(paddClient, className);
+        }
         setSize(1000, 450);
         javax.swing.Timer ballUpdater = new javax.swing.Timer(30, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 ball.translate(ball_dx, ball_dy);
-                if (ball.x>(gamePanel.getWidth() - BALL_DIAMETER) || ball.x < 5)
-                {
+                if (ball.x > (gamePanel.getWidth() - BALL_DIAMETER) || ball.x < 5) {
                     ball_dx = -ball_dx;
-                    if(ball.x< 5){
-                        playerRightPoints++;
-                        rightPts.setText(playerRightPoints + "");
-                    }
-                    else{
-                        playerLeftPoints++;
-                        leftPts.setText(playerLeftPoints + "");
+                    if (ball.x < 5) {
+                        playerClientPoints++;
+                        clientPts.setText(playerClientPoints + "");
+                    } else {
+                        playerServerPoints++;
+                        serverPts.setText(playerServerPoints + "");
                     }
                 }
-                if (ball.y>(gamePanel.getHeight()-BALL_DIAMETER) || ball.y < 5)
-                {
+                if (ball.y > (gamePanel.getHeight() - BALL_DIAMETER) || ball.y < 5) {
                     ball_dy = -ball_dy;
                 }
-                if(ball.x == (paddLeft.getX() + PADDLE_WIDTH)){
-                    if((ball.y >= (paddLeft.getY())) && (ball.y <= (paddLeft.getY()+PADDLE_HEIGHT))){
+                if (ball.x == (paddServer.getX() + PADDLE_WIDTH)) {
+                    if ((ball.y >= (paddServer.getY())) && (ball.y <= (paddServer.getY() + PADDLE_HEIGHT))) {
                         ball_dx = -ball_dx;
                     }
                 }
-                if((ball.x+BALL_DIAMETER) == paddRight.x){
-                    if((ball.y >= (paddRight.getY())) && (ball.y <= (paddRight.getY()+PADDLE_HEIGHT))){
+                if ((ball.x + BALL_DIAMETER) == paddClient.x) {
+                    if ((ball.y >= (paddClient.getY())) && (ball.y <= (paddClient.getY() + PADDLE_HEIGHT))) {
                         ball_dx = -ball_dx;
                     }
                 }
@@ -129,12 +131,13 @@ class PongCommon extends JFrame {
     }
     class GamePanel extends JPanel{
 
-        GamePanel(){
+        GamePanel(Point paddle, String className) {
             setPreferredSize(new Dimension(800, 400));
-            setBackground(new Color(0,250, 0));
+            setBackground(new Color(0, 250, 0));
             setFocusable(true);
             addKeyListener(new KeyListener() {
                 long duration;
+
                 @Override
                 public void keyTyped(KeyEvent keyEvent) {
                     keyEvent.consume();
@@ -144,21 +147,21 @@ class PongCommon extends JFrame {
                 public void keyPressed(KeyEvent keyEvent) {
                     switch( keyEvent.getKeyCode()) {
                         case KeyEvent.VK_UP:
-                            if(paddRight.y >= 0){
-                                paddRight.translate(0, -5);
-
-                            }
-                            else if((paddRight.y < 0) ){
-                                paddRight.translate(0, 400);
+                            if (paddle.y >= 0) {
+                                paddle.translate(0, -5);
+                                sendPaddleData(paddle.getLocation(), className);
+                            } else if ((paddle.y < 0)) {
+                                paddle.translate(0, 400);
+                                sendPaddleData(paddle.getLocation(), className);
                             }
                             break;
                         case KeyEvent.VK_DOWN:
-                            if (paddRight.y <= 400){
-                                paddRight.translate(0, 5);
-                            }
-                            else if((paddRight.y) > 400)
-                            {
-                                paddRight.translate(0, -400);
+                            if (paddle.y <= 400) {
+                                paddle.translate(0, 5);
+                                sendPaddleData(paddle.getLocation(), className);
+                            } else if ((paddle.y) > 400) {
+                                paddle.translate(0, -400);
+                                sendPaddleData(paddle.getLocation(), className);
                             }
                             break;
                     }
@@ -167,20 +170,6 @@ class PongCommon extends JFrame {
                 @Override
                 public void keyReleased(KeyEvent keyEvent) {
                 }
-            });
-
-            addMouseWheelListener((MouseWheelEvent mouseWheelEvent) -> {
-                if((paddLeft.y >= 0) && (paddLeft.y <= 400)){
-                    paddLeft.translate(0, 5 * mouseWheelEvent.getWheelRotation());
-                }
-                if((paddLeft.y < 0) ){
-                    paddLeft.translate(0, 400);
-                }
-                if((paddLeft.y) > 400)
-                {
-                    paddLeft.translate(0, -400);
-                }
-                repaint();
             });
 
         }
@@ -192,9 +181,9 @@ class PongCommon extends JFrame {
 
             g.fillOval(ball.x,ball.y, BALL_DIAMETER, BALL_DIAMETER);
             g.setColor(Color.BLUE);
-            g.fillRect(paddLeft.x,paddLeft.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+            g.fillRect(paddServer.x, paddServer.y, PADDLE_WIDTH, PADDLE_HEIGHT);
             g.setColor(Color.RED);
-            g.fillRect(paddRight.x, paddRight.y, PADDLE_WIDTH, PADDLE_HEIGHT);
+            g.fillRect(paddClient.x, paddClient.y, PADDLE_WIDTH, PADDLE_HEIGHT);
         }
     }
     class GameData extends JPanel{
@@ -215,19 +204,19 @@ class PongCommon extends JFrame {
             clientLabel.setHorizontalAlignment(SwingConstants.CENTER);
             clientLabel.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
-            leftPts = new JLabel();
-            leftPts.setHorizontalAlignment(SwingConstants.CENTER);
-            leftPts.setFont(new Font("Tahoma", Font.PLAIN, 16));
+            serverPts = new JLabel();
+            serverPts.setHorizontalAlignment(SwingConstants.CENTER);
+            serverPts.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
-            rightPts = new JLabel();
-            rightPts.setHorizontalAlignment(SwingConstants.CENTER);
-            rightPts.setFont(new Font("Tahoma", Font.PLAIN, 16));
+            clientPts = new JLabel();
+            clientPts.setHorizontalAlignment(SwingConstants.CENTER);
+            clientPts.setFont(new Font("Tahoma", Font.PLAIN, 16));
 
             add(title);
             add(serverLabel);
-            add(leftPts);
+            add(serverPts);
             add(clientLabel);
-            add(rightPts);
+            add(clientPts);
 
 
         }
@@ -236,17 +225,14 @@ class PongCommon extends JFrame {
 
 
     // send message to server/client
-    private void sendData(String message, String className)
-    {
+    private void sendPaddleData(Object paddleData, String className) {
         // send object to server/client
-        try
-        {
-            output.writeObject( className.toUpperCase()+">>> " + message );
+        try {
+            output.writeObject(paddleData);
             output.flush(); // flush output to server/client
-            displayMessage( "\n"+className.toUpperCase()+">>> " + message );
+            // displayMessage("paddle data sent");
         } // end try
-        catch ( IOException ioException )
-        {
+        catch (IOException ioException) {
             displayMessage( "\nError writing object" );
         } // end catch
     } // end method sendData
@@ -279,27 +265,21 @@ class PongCommon extends JFrame {
     } // end method getStreams
 
     // process connection with server/client
-    void processConnection(String className) throws IOException
-    {
-        String message = "Connection successful";
-        if(className.equals("Server")) {
-            sendData(message, className); // send connection successful message
-        }
-        else{
-            message = "";
-        }
+    void processConnection(String className) throws IOException, ClassNotFoundException {
+        String message = "l";
+        Scanner in = new Scanner(input.readObject().toString()).useDelimiter("[^0-9]+");
+        int x = in.nextInt();
+        int y = in.nextInt();
 
         do // process messages sent from server/client
         {
             try // read message and display it
             {
-                message = (String) input.readObject(); // read new message
-                displayMessage( "\n" + message ); // display message
+                displayMessage("\n" + x + " " + y); // display message
             } // end try
-            catch ( ClassNotFoundException classNotFoundException )
-            {
-                displayMessage( "\nUnknown object type received" );
-            } // end catch
+            finally {
+                displayMessage("\nUnknown object type received");
+            }
 
         } while ( !message.contains(">>> TERMINATE" ));
     } // end method processConnection
@@ -307,10 +287,9 @@ class PongCommon extends JFrame {
     // close streams and socket
     void closeConnection(Socket socket, String className)
     {
-        if(className.equals("Server")) {
+        if (className.contains("Server")) {
             displayMessage("\nTerminating connection\n");
-        }
-        else if(className.equals("Client")){
+        } else if (className.contains("Client")) {
             displayMessage("\nClosing connection\n");
         }
         try

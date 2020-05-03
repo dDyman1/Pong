@@ -34,7 +34,7 @@ public class PongServer extends PongCommon {
                     ++counter;
                 }
             }
-        } catch (IOException ioException) {
+        } catch (IOException | ClassNotFoundException ioException) {
             ioException.printStackTrace();
         }
     }

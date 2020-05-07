@@ -1,7 +1,6 @@
 package pong;
 
-import java.io.EOFException;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -34,7 +33,7 @@ public class PongServer extends PongCommon {
                     ++counter;
                 }
             }
-        } catch (IOException | ClassNotFoundException ioException) {
+        } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
@@ -45,6 +44,7 @@ public class PongServer extends PongCommon {
         connection = server.accept();
         cc.displayMessage("Connection " + counter + " received from: " +
                 connection.getInetAddress().getHostName());
+        cc.runCommon(className);
     }
 }
 
